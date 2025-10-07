@@ -116,6 +116,15 @@ struct modem_chat_script_chat {
 		.timeout = 0,                                                                      \
 	}
 
+#define MODEM_CHAT_SCRIPT_CMD_RESP_TIME(_request, _response_match, _timeout_ms)                                      \
+	{                                                                                          \
+		.request = (uint8_t *)(_request),                                                  \
+		.request_size = (uint16_t)(sizeof(_request) - 1),                                  \
+		.response_matches = &_response_match,                                              \
+		.response_matches_size = 1,                                                        \
+		.timeout = _timeout_ms,                                                                      \
+	}
+
 #define MODEM_CHAT_SCRIPT_CMD_RESP_MULT(_request, _response_matches)                               \
 	{                                                                                          \
 		.request = (uint8_t *)(_request),                                                  \
@@ -132,6 +141,15 @@ struct modem_chat_script_chat {
 		.response_matches = NULL,                                                          \
 		.response_matches_size = 0,                                                        \
 		.timeout = _timeout_ms,                                                            \
+	}
+
+#define MODEM_CHAT_SCRIPT_CMD_RESP_MULT_TIME(_request, _response_matches, _timeout_ms)                               \
+	{                                                                                          \
+		.request = (uint8_t *)(_request),                                                  \
+		.request_size = (uint16_t)(sizeof(_request) - 1),                                  \
+		.response_matches = _response_matches,                                             \
+		.response_matches_size = ARRAY_SIZE(_response_matches),                            \
+		.timeout = _timeout_ms,                                                                       \
 	}
 
 #define MODEM_CHAT_SCRIPT_CMDS_DEFINE(_sym, ...)                                                   \

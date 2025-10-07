@@ -124,6 +124,24 @@ zephyr_library_sources_ifdef(CONFIG_LWM2M_UCIFI_BATTERY
     ucifi_battery.c
     )
 
+#-------------------------- NEW IPSO OBJECT -------------------------------*/
+zephyr_library_sources_ifdef(CONFIG_LWM2M_IPSO_INTERVAL_DATA_DELIVERY
+    ipso_interval_data_delivery.c
+    )
+zephyr_library_sources_ifdef(CONFIG_LWM2M_IPSO_EVENT_DATA_DELIVERY
+    ipso_event_data_delivery.c
+    )
+zephyr_library_sources_ifdef(CONFIG_LWM2M_IPSO_DELIVERY_SCHEDULE
+    ipso_delivery_schedule.c
+    )
+zephyr_library_sources_ifdef(CONFIG_LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION
+    ipso_leakage_detection_configuration.c
+    )
+zephyr_library_sources_ifdef(CONFIG_LWM2M_IPSO_WATER_FLOW_READINGS
+    ipso_water_flow_readings.c
+    )
+#--------------------------------------------------------------------------*/
+
 # Shell commands
 zephyr_library_sources_ifdef(CONFIG_LWM2M_SHELL
     lwm2m_shell.c

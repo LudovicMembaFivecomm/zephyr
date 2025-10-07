@@ -70,6 +70,15 @@ extern "C" {
  * @{
  */
 
+/* new object*/
+/*#---------------------------- NEW OBJECT ---------------------------------*/
+#define IPSO_OBJECT_INTERVAL_DATA_DELIVERY_ID				10262 /**< IPSO Interval Data Delivery object */
+#define IPSO_OBJECT_EVENT_DATA_DELIVERY_ID					10263 /**< IPSO Event Data Delivery object */
+#define IPSO_OBJECT_DELIVERY_SCHEDULE_ID 					10264 /**< IPSO Delivery Schedule object */
+#define IPSO_OBJECT_LEAKAGE_DETECTION_CONFIGURATION_ID		10265 /**< IPSO Leakage Detection Configuration object */	
+#define IPSO_OBJECT_WATER_FLOW_READINGS_ID 					10266 /**< IPSO Water Flow Readings object */
+/*#--------------------------------------------------------------------------*/
+
 /* clang-format off */
 #define IPSO_OBJECT_GENERIC_SENSOR_ID       3300 /**< IPSO Generic Sensor object */
 #define IPSO_OBJECT_TEMP_SENSOR_ID          3303 /**< IPSO Temperature Sensor object */

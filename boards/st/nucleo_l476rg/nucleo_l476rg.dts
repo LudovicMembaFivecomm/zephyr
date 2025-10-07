@@ -16,6 +16,8 @@
 	compatible = "st,stm32l476rg-nucleo";
 
 	chosen {
+		zephyr,modem = &modem;
+		zephyr,ppp = &usart1;
 		zephyr,console = &usart2;
 		zephyr,shell-uart = &usart2;
 		zephyr,sram = &sram0;
@@ -25,9 +27,19 @@
 	leds: leds {
 		compatible = "gpio-leds";
 
+		red_led_1: led_1 {
+			gpios = <&gpiob 4 GPIO_ACTIVE_HIGH>;
+			label = "User LD1";
+		};
+
 		green_led_2: led_2 {
-			gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;
+			gpios = <&gpiob 5 GPIO_ACTIVE_HIGH>;
 			label = "User LD2";
+		};
+
+		yellow_led_3: led_3 {
+			gpios = <&gpiob 6 GPIO_ACTIVE_HIGH>;
+			label = "User LD3";
 		};
 	};
 
@@ -42,10 +54,13 @@
 	};
 
 	aliases {
-		led0 = &green_led_2;
+		led1 = &red_led_1;
+		led2 = &green_led_2;
+		led3 = &yellow_led_3;
 		sw0 = &user_button;
 		volt-sensor0 = &vref;
 		volt-sensor1 = &vbat;
+		modem = &modem;
 	};
 };
 
@@ -85,10 +100,19 @@ stm32_lp_tick_source: &lptim1 {
 };
 
 &usart1 {
-	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
-	pinctrl-names = "default";
-	current-speed = <115200>;
-	status = "okay";
+    status = "okay";
+    current-speed = <115200>;
+	hw-flow-control;
+    pinctrl-0 = <&usart1_rts_pa12 &usart1_cts_pa11 &usart1_tx_pa9 &usart1_rx_pa10>;
+    pinctrl-names = "default";
+
+	modem: modem {
+		compatible = "sqn,gm02s";
+		status = "okay";
+
+		mdm-wake-gpios = <&gpioc 6 GPIO_ACTIVE_HIGH>;  
+		mdm-reset-gpios = <&gpioa 8 GPIO_ACTIVE_LOW>; 
+	};
 };
 
 &usart2 {
@@ -182,6 +206,20 @@ stm32_lp_tick_source: &lptim1 {
 &vbat {
 	status = "okay";
 };
+
+/* Configuración para los pines de control manual de gm02s */
+&gpioa {
+    status = "okay";
+};
+
+&gpiob {
+    status = "okay";
+};
+
+&gpioc {
+    status = "okay";
+};
+/*--------------------------------------------------------*/
 
 &flash0 {
 	partitions {

@@ -10,6 +10,51 @@
 #define __LWM2M_RESOURCE_IDS__
 
 /* clang-format off */
+/*#---------------------------- NEW OBJECT ---------------------------------*/
+/* Additions for IPSO Object (10262) */
+#define NAME_RID                 0
+#define INTERVAL_LINKS_RID       1
+#define LATEST_PAYLOAD_RID       2
+#define SCHEDULE_RID             3
+/* Additions for IPSO Object (10263) */
+#define EVENT_DATA_LINKS_RID     1
+#define LATEST_EVENTLOG_RID      2
+
+/* Additions for IPSO Delivery Schedule Object (10264) */
+#define SCHEDULE_START_TIME_RID  0
+#define SCHEDULE_UTC_OFFSET_RID  1
+#define DELIVERY_FREQUENCY_RID   2
+#define RANDOMISED_WINDOW_RID    3
+#define NUMBER_OF_RETRIES_RID    4
+#define RETRY_PERIOD_RID         5
+
+/* Additions for IPSO Leakage Detection Configuration Object (10265) */
+#define SAMPLE_TIMES_RID              0
+#define SAMPLE_UTC_OFFSET_RID         1
+#define DETECTION_MODE_RID            2
+#define TOP_FREQUENCY_COUNT_RID       3
+#define FREQUENCY_THRESHOLDS_RID      4
+#define FREQUENCY_VALUES_RID          5
+#define FIRMWARE_VERSION_RID          7
+
+/* Additions for IPSO Water Flow Readings Object (10266)*/
+#define INTERVAL_PERIOD_RID             6000
+#define INTERVAL_START_OFFSET_RID       6001
+#define INTERVAL_UTC_OFFSET_RID         6002
+#define INTERVAL_COLLECTION_START_RID   6003
+#define OLDEST_RECORDED_INTERVAL_RID    6004
+#define LAST_DELIVERED_INTERVAL_RID     6005
+#define LATEST_RECORDED_INTERVAL_RID    6006
+#define DELIVERY_MIDNIGHT_ALIGNED_RID   6007
+#define INTERVAL_HISTORICAL_READ_RID    6008
+#define INTERVAL_HISTORICAL_PAYLOAD_RID 6009
+#define INTERVAL_CHANGE_CONFIG_RID      6010
+#define START_RID                       6026
+#define STOP_RID                        6027
+#define STATUS_RID                      6028
+#define LATEST_PAYLOAD_RID_10266        6029
+/*#--------------------------------------------------------------------------*/
+
 #define DIGITAL_INPUT_STATE_RID           5500
 #define DIGITAL_INPUT_COUNTER_RID         5501
 #define TIMESTAMP_RID                     5518

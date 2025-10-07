@@ -45,6 +45,15 @@ extern "C" {
  * @}
  */
 
+/*
+ * Nota: 
+ * - Los nodos DT_NODELABEL(...) deben estar definidos en el device tree.
+ * - Los pines deben estar correctamente configurados en el device tree.
+ * - Si no existen los nodos, debe agregarlos en el archivo .dts correspondiente.
+ */
+/**********************************************************/
+
+
 /**
  * @name GPIO input/output configuration flags
  * @{
@@ -1901,6 +1910,7 @@ static inline int z_impl_gpio_get_pending_int(const struct device *dev)
 	SYS_PORT_TRACING_FUNC_EXIT(gpio, get_pending_int, dev, ret);
 	return ret;
 }
+
 
 /**
  * @}

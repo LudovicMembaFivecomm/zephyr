@@ -365,4 +365,186 @@ config LWM2M_IPSO_FILLING_SENSOR_INSTANCE_COUNT
 	  This setting establishes the total count of IPSO filling
 	  sensor instances available to the LwM2M client.
 
+#---------------------------- NEW OBJECT ---------------------------------
+config LWM2M_IPSO_INTERVAL_DATA_DELIVERY
+    bool "IPSO Interval Data Delivery Support"
+    help
+      This IPSO object provides an optimized means for managing the delivery
+      of interval data from multiple Interval Data Object instances.
+
+if LWM2M_IPSO_INTERVAL_DATA_DELIVERY
+
+config LWM2M_IPSO_INTERVAL_DATA_DELIVERY_INSTANCE_COUNT
+    int "Maximum # of IPSO Interval Data Delivery object instances"
+    default 1
+    help
+      This setting establishes the total count of IPSO Interval Data Delivery
+      instances available to the LWM2M client.
+
+config LWM2M_IPSO_INTERVAL_DATA_DELIVERY_NAME
+    string "Name that will show up in debug output when object is created"
+    default "Interval Data Delivery"
+    help
+      The name used for debug logging when an instance is created.
+
+config LWM2M_IPSO_INTERVAL_DATA_DELIVERY_LINK_COUNT
+    int "Maximum # of Interval Data Links per instance"
+    default 8
+    help
+      This setting establishes the maximum number of Interval Data Links
+      per IPSO Interval Data Delivery instance.
+
+endif # LWM2M_IPSO_INTERVAL_DATA_DELIVERY
+
+config LWM2M_IPSO_EVENT_DATA_DELIVERY
+    bool "IPSO Event Data Delivery Support"
+    help
+      This IPSO object provides an optimized means for managing the delivery
+      of event data from multiple Event Data Object instances.
+
+if LWM2M_IPSO_EVENT_DATA_DELIVERY
+
+config LWM2M_IPSO_EVENT_DATA_DELIVERY_INSTANCE_COUNT
+    int "Maximum # of IPSO Event Data Delivery object instances"
+    default 1
+    help
+      This setting establishes the total count of IPSO Event Data Delivery
+      instances available to the LWM2M client.
+
+config LWM2M_IPSO_EVENT_DATA_DELIVERY_NAME
+    string "Name that will show up in debug output when object is created"
+    default "Event Data Delivery"
+    help
+      The name used for debug logging when an instance is created.
+
+config LWM2M_IPSO_EVENT_DATA_DELIVERY_LINK_COUNT
+    int "Maximum # of Event Data Links per instance"
+    default 8
+    help
+      This setting establishes the maximum number of Event Data Links
+      per IPSO Event Data Delivery instance.
+
+config LWM2M_IPSO_EVENT_DATA_DELIVERY_LOG_COUNT
+    int "Maximum # of Latest Eventlogs per instance"
+    default 8
+    help
+      This setting establishes the maximum number of Latest Eventlogs
+      per IPSO Event Data Delivery instance.
+
+endif # LWM2M_IPSO_EVENT_DATA_DELIVERY
+
+config LWM2M_IPSO_DELIVERY_SCHEDULE
+    bool "IPSO Delivery Schedule Support"
+    help
+      This IPSO object provides scheduling configuration for data delivery
+      with start time, UTC offset, frequency, retry options, and randomized windows.
+
+if LWM2M_IPSO_DELIVERY_SCHEDULE
+
+config LWM2M_IPSO_DELIVERY_SCHEDULE_INSTANCE_COUNT
+    int "Maximum # of IPSO Delivery Schedule object instances"
+    default 1
+    help
+      This setting establishes the total count of IPSO Delivery Schedule
+      instances available to the LWM2M client.
+
+config LWM2M_IPSO_DELIVERY_SCHEDULE_NAME
+    string "Name that will show up in debug output when object is created"
+    default "Delivery Schedule"
+    help
+      The name used for debug logging when an instance is created.
+
+config LWM2M_IPSO_DELIVERY_SCHEDULE_UTC_OFFSET
+    string "Default UTC offset for Delivery Schedule object"
+    default "+00:00"
+    help
+      The default UTC offset string for the Schedule UTC Offset resource.
+
+endif # LWM2M_IPSO_DELIVERY_SCHEDULE
+
+config LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION
+    bool "IPSO Leakage Detection Configuration Support"
+    help
+      This IPSO object provides configuration for leakage detection with sample times,
+      UTC offset, detection mode, frequency thresholds, and firmware version.
+
+if LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION
+
+config LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION_INSTANCE_COUNT
+    int "Maximum # of IPSO Leakage Detection Configuration object instances"
+    default 1
+    help
+      This setting establishes the total count of IPSO Leakage Detection Configuration
+      instances available to the LWM2M client.
+
+config LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION_NAME
+    string "Name that will show up in debug output when object is created"
+    default "Leakage Detection Config"
+    help
+      The name used for debug logging when an instance is created.
+
+config LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION_UTC_OFFSET
+    string "Default UTC offset for Leakage Detection Configuration object"
+    default "+00:00"
+    help
+      The default UTC offset string for the Sample UTC Offset resource.
+
+config LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION_FIRMWARE_VERSION
+    string "Default firmware version for Leakage Detection Configuration object"
+    default "1.0.0"
+    help
+      The default firmware version string for the Firmware Version resource.
+
+config LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION_MAX_SAMPLES
+    int "Maximum # of Sample Times per instance"
+    default 16
+    help
+      This setting establishes the maximum number of Sample Times per instance.
+
+config LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION_MAX_FREQ_BANDS
+    int "Maximum # of Frequency Thresholds/Values per instance"
+    default 64
+    help
+      This setting establishes the maximum number of Frequency Thresholds and Values per instance.
+
+endif # LWM2M_IPSO_LEAKAGE_DETECTION_CONFIGURATION
+
+config LWM2M_IPSO_WATER_FLOW_READINGS
+    bool "IPSO Water Flow Readings Support"
+    help
+      This IPSO object provides water flow readings configuration with interval periods,
+      UTC offsets, collection times, delivery alignment, historical reads, and status.
+
+if LWM2M_IPSO_WATER_FLOW_READINGS
+
+config LWM2M_IPSO_WATER_FLOW_READINGS_INSTANCE_COUNT
+    int "Maximum # of IPSO Water Flow Readings object instances"
+    default 1
+    help
+      This setting establishes the total count of IPSO Water Flow Readings
+      instances available to the LWM2M client.
+
+config LWM2M_IPSO_WATER_FLOW_READINGS_NAME
+    string "Name that will show up in debug output when object is created"
+    default "Water Flow Readings"
+    help
+      The name used for debug logging when an instance is created.
+
+config LWM2M_IPSO_WATER_FLOW_READINGS_UTC_OFFSET
+    string "Default UTC offset for Water Flow Readings object"
+    default "+00:00"
+    help
+      The default UTC offset string for the Interval UTC Offset resource.
+
+config LWM2M_IPSO_WATER_FLOW_READINGS_MAX_PAYLOAD_SIZE
+    int "Maximum size of payload buffers for Latest and Historical payloads"
+    default 1024
+    help
+      This setting establishes the maximum size for opaque payload buffers
+      in the Water Flow Readings object.
+
+endif # LWM2M_IPSO_WATER_FLOW_READINGS
+
+#-------------------------------------------------------------------------
+
 endif # LWM2M_LWM2M_IPSO_SUPPORT

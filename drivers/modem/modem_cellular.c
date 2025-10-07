@@ -125,7 +125,7 @@ struct modem_cellular_data {
 
 	/* Modem chat */
 	struct modem_chat chat;
-	uint8_t chat_receive_buf[CONFIG_MODEM_CELLULAR_CHAT_BUFFER_SIZE];
+	uint8_t chat_receive_buf[CONFIG_MODEM_CELLULAR_CHAT_BUFFER_SIZE * 2];
 	uint8_t *chat_delimiter;
 	uint8_t *chat_filter;
 	uint8_t *chat_argv[32];
@@ -587,6 +587,7 @@ static void modem_cellular_chat_on_cxreg(struct modem_chat *chat, char **argv, u
 	}
 }
 
+MODEM_CHAT_MATCH_DEFINE(sysStart_match, "+SYSSTART", "", NULL);
 MODEM_CHAT_MATCH_DEFINE(ok_match, "OK", "", NULL);
 MODEM_CHAT_MATCHES_DEFINE(allow_match,
 			  MODEM_CHAT_MATCH("OK", "", NULL),
@@ -655,7 +656,17 @@ static void modem_cellular_build_apn_script(struct modem_cellular_data *data)
 	uint8_t steps = 0;
 
 	/* Mandatory PDP context */
-	append_apn_cmd(data, &steps, "AT+CGDCONT=1,\"IP\",\"%s\"", data->apn);
+	// #ifdef CONFIG_MODEM_CELLULAR_APN
+	// if (strlen(CONFIG_MODEM_CELLULAR_APN) > 0) {
+	// 	append_apn_cmd(data, &steps, "AT+CGDCONT=1,\"IPV4V6\",\"%s\",,,,0,0,0,0,0,0,1,,0", data->apn);
+	// } else {
+	// 	append_apn_cmd(data, &steps, "AT+CGDCONT=1,\"IPV4V6\",,,,,0,0,0,0,0,0,1,,0", data->apn);
+	// }
+	// #endif
+
+	// append_apn_cmd(data, &steps, "AT+CGDCONT=1,\"IPV4V6\",\"%s\"", data->apn);
+	// append_apn_cmd(data, &steps, "AT+CGDCONT=1,\"IPV4V6\",\"%s\",,,,0,0,0,0,0,0,1,,0", data->apn);
+	append_apn_cmd(data, &steps, "AT+CGDCONT=1,\"IPV4V6\",,,,,0,0,0,0,0,0,1,,0", data->apn);
 
 	/* Vendor‑specific extras */
 #if DT_HAS_COMPAT_STATUS_OKAY(swir_hl7800)
@@ -2069,7 +2080,7 @@ static void modem_cellular_init_apn(struct modem_cellular_data *data)
 	if (strlen(CONFIG_MODEM_CELLULAR_APN) > 0) {
 		strncpy(data->apn, CONFIG_MODEM_CELLULAR_APN, sizeof(data->apn) - 1);
 		data->apn[sizeof(data->apn) - 1] = '\0';
-	}
+	} 
 #endif
 
 	modem_chat_script_init(&data->apn_script);
@@ -2784,9 +2795,9 @@ MODEM_CHAT_SCRIPT_DEFINE(nordic_nrf91_slm_periodic_chat_script,
 #if DT_HAS_COMPAT_STATUS_OKAY(sqn_gm02s)
 MODEM_CHAT_SCRIPT_CMDS_DEFINE(sqn_gm02s_init_chat_script_cmds,
 			      MODEM_CHAT_SCRIPT_CMD_RESP("ATE0", ok_match),
-			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CFUN=4", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+CFUN=4", ok_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CMEE=1", ok_match),
-			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CEREG=1", ok_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CEREG=2", ok_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CEREG?", ok_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CGSN", imei_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP("", ok_match),
@@ -2796,25 +2807,45 @@ MODEM_CHAT_SCRIPT_CMDS_DEFINE(sqn_gm02s_init_chat_script_cmds,
 			      MODEM_CHAT_SCRIPT_CMD_RESP("", ok_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CGMR", cgmr_match),
 			      MODEM_CHAT_SCRIPT_CMD_RESP("", ok_match),
-			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CMUX=0,0,5,127", ok_match));
+			      // ----------
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+CFUN=5", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP_MULT("AT+SQNHWCFG=\"antennaTuning\",\"enable\",\"0x0\",\"617,698,0x0,698,797,0x2,797,887,0x1,887,2200,0x3\"", allow_match),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+SQNHWCFG=\"status_led\",\"enable\",\"inversed\"", ok_match), 
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+SMST=0", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+SQNHWCFG=\"antennaTuning\"", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT^RESET", sysStart_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+CFUN=0", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+SQNMODEACTIVE=1", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT^RESET", sysStart_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+CFUN=0", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+SQNBANDSEL=0,\"standard\",\"3\"", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+CSUS=0", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+CSUS?", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+CMEE=1", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+SQNAUTOCONNECT=1", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+CMUX=0,0,5,127", ok_match)
+				  );
 
 MODEM_CHAT_SCRIPT_DEFINE(sqn_gm02s_init_chat_script, sqn_gm02s_init_chat_script_cmds,
-			 abort_matches, modem_cellular_chat_callback_handler, 10);
+			 abort_matches, modem_cellular_chat_callback_handler,20);
 
 MODEM_CHAT_SCRIPT_CMDS_DEFINE(sqn_gm02s_dial_chat_script_cmds,
-			      MODEM_CHAT_SCRIPT_CMD_RESP_MULT("AT+CGACT=0,1", allow_match),
-			      MODEM_CHAT_SCRIPT_CMD_RESP_NONE("AT+CFUN=1", 10000),
-			      MODEM_CHAT_SCRIPT_CMD_RESP("ATD*99***1#", connect_match));
+				  MODEM_CHAT_SCRIPT_CMD_RESP_MULT("AT+CGACT=0,1", allow_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP("AT+CFUN=1", ok_match),
+				  MODEM_CHAT_SCRIPT_CMD_RESP_MULT_TIME("AT+CEREG?",unsol_matches,10000),
+			      MODEM_CHAT_SCRIPT_CMD_RESP("ATD*99***1#", connect_match)
+				);
 
 MODEM_CHAT_SCRIPT_DEFINE(sqn_gm02s_dial_chat_script, sqn_gm02s_dial_chat_script_cmds,
-			 dial_abort_matches, modem_cellular_chat_callback_handler, 15);
+			 dial_abort_matches, modem_cellular_chat_callback_handler, 30);
 
 MODEM_CHAT_SCRIPT_CMDS_DEFINE(sqn_gm02s_periodic_chat_script_cmds,
-			      MODEM_CHAT_SCRIPT_CMD_RESP("AT+CEREG?", ok_match));
+				//   MODEM_CHAT_SCRIPT_CMD_RESP_MULT_TIME("AT+CEREG?",unsol_matches,2000)
+				);
 
 MODEM_CHAT_SCRIPT_DEFINE(sqn_gm02s_periodic_chat_script,
 			 sqn_gm02s_periodic_chat_script_cmds, abort_matches,
-			 modem_cellular_chat_callback_handler, 4);
+			 modem_cellular_chat_callback_handler, 10);
 #endif
 
 #define MODEM_CELLULAR_INST_NAME(name, inst) \
