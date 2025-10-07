@@ -459,12 +459,27 @@ uint32_t sys_clock_elapsed(void)
 	return (uint32_t)(counter_sub(counter(), last_count) / CYC_PER_TICK);
 }
 
+#if !defined(CONFIG_GEN_SW_ISR_TABLE)
+ISR_DIRECT_DECLARE(nrfx_grtc_direct_irq_handler)
+{
+	nrfx_grtc_irq_handler();
+	ISR_DIRECT_PM();
+	return 1;
+}
+#endif
+
 static int sys_clock_driver_init(void)
 {
 	nrfx_err_t err_code;
 
+#if defined(CONFIG_GEN_SW_ISR_TABLE)
 	IRQ_CONNECT(DT_IRQN(GRTC_NODE), DT_IRQ(GRTC_NODE, priority), nrfx_isr,
 		    nrfx_grtc_irq_handler, 0);
+#else
+	IRQ_DIRECT_CONNECT(DT_IRQN(GRTC_NODE), DT_IRQ(GRTC_NODE, priority),
+			   nrfx_grtc_direct_irq_handler, 0);
+	irq_enable(DT_IRQN(GRTC_NODE));
+#endif
 
 #if defined(CONFIG_NRF_GRTC_TIMER_CLOCK_MANAGEMENT) && NRF_GRTC_HAS_CLKSEL
 #if defined(CONFIG_CLOCK_CONTROL_NRF_K32SRC_RC)
@@ -502,6 +517,11 @@ static int sys_clock_driver_init(void)
 		system_timeout_set_relative(CYC_PER_TICK);
 	}
 
+	return 0;
+}
+
+static int grtc_post_init(void)
+{
 #if defined(CONFIG_CLOCK_CONTROL_NRF)
 	static const enum nrf_lfclk_start_mode mode =
 		IS_ENABLED(CONFIG_SYSTEM_CLOCK_NO_WAIT)
@@ -575,5 +595,6 @@ int nrf_grtc_timer_clock_driver_init(void)
 	return sys_clock_driver_init();
 }
 #else
-SYS_INIT(sys_clock_driver_init, PRE_KERNEL_2, CONFIG_SYSTEM_CLOCK_INIT_PRIORITY);
+SYS_INIT(sys_clock_driver_init, EARLY, CONFIG_SYSTEM_CLOCK_INIT_PRIORITY);
+SYS_INIT(grtc_post_init, PRE_KERNEL_2, CONFIG_SYSTEM_CLOCK_INIT_PRIORITY);
 #endif

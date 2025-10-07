@@ -10,6 +10,7 @@
 #include <zephyr/sys/byteorder.h>
 #include <soc.h>
 
+#include <nrf_sys_event.h>
 #include <nrfx_gpiote.h>
 
 #include "util/mem.h"
@@ -221,7 +222,11 @@ void radio_reset(void)
 			    RADIO_TIMING_RU_Msk;
 #endif /* !CONFIG_BT_CTLR_TIFS_HW */
 
+#if defined(CONFIG_NRF_SYS_EVENT)
+	(void)nrf_sys_event_request_global_constlat();
+#else /* !CONFIG_NRF_SYS_EVENT */
 	NRF_POWER->TASKS_CONSTLAT = 1U;
+#endif /* !CONFIG_NRF_SYS_EVENT */
 #endif /* CONFIG_SOC_COMPATIBLE_NRF54LX */
 
 #if defined(HAL_RADIO_GPIO_HAVE_PA_PIN) || defined(HAL_RADIO_GPIO_HAVE_LNA_PIN)
@@ -1788,7 +1793,11 @@ void radio_tmr_stop(void)
 #endif /* !CONFIG_BT_CTLR_TIFS_HW */
 
 #if defined(CONFIG_SOC_COMPATIBLE_NRF54LX)
+#if defined(CONFIG_NRF_SYS_EVENT)
+	(void)nrf_sys_event_release_global_constlat();
+#else /* !CONFIG_NRF_SYS_EVENT */
 	NRF_POWER->TASKS_LOWPWR = 1U;
+#endif /* !CONFIG_NRF_SYS_EVENT */
 #endif /* CONFIG_SOC_COMPATIBLE_NRF54LX */
 }
 
@@ -2526,6 +2535,7 @@ void radio_ccm_disable(void)
 	nrf_ccm_task_trigger(NRF_CCM, NRF_CCM_TASK_STOP);
 	nrf_ccm_disable(NRF_CCM);
 }
+#endif /* CONFIG_BT_CTLR_LE_ENC || CONFIG_BT_CTLR_BROADCAST_ISO_ENC */
 
 #if defined(CONFIG_BT_CTLR_PRIVACY)
 static uint8_t MALIGN(4) _aar_scratch[3];
@@ -2656,7 +2666,6 @@ uint8_t radio_ar_resolve(const uint8_t *addr)
 
 }
 #endif /* CONFIG_BT_CTLR_PRIVACY */
-#endif /* CONFIG_BT_CTLR_LE_ENC || CONFIG_BT_CTLR_BROADCAST_ISO_ENC */
 
 #if defined(CONFIG_BT_CTLR_DF_SUPPORT) && !defined(CONFIG_ZTEST)
 /* @brief Function configures CTE inline register to start sampling of CTE

@@ -12,6 +12,7 @@
 #include <zephyr/bluetooth/addr.h>
 #include <zephyr/bluetooth/att.h>
 #include <zephyr/bluetooth/iso.h>
+#include <zephyr/bluetooth/audio/mcs.h>
 #include <zephyr/net_buf.h>
 #include <zephyr/sys/byteorder.h>
 
@@ -22,6 +23,74 @@
 void bsim_btp_uart_init(void);
 void bsim_btp_send_to_tester(const uint8_t *data, size_t len);
 void bsim_btp_wait_for_evt(uint8_t service, uint8_t opcode, struct net_buf **out_buf);
+
+static inline void bsim_btp_ccp_discover(const bt_addr_le_t *address)
+{
+	struct btp_ccp_discover_tbs_cmd *cmd;
+	struct btp_hdr *cmd_hdr;
+
+	NET_BUF_SIMPLE_DEFINE(cmd_buffer, BTP_MTU);
+
+	cmd_hdr = net_buf_simple_add(&cmd_buffer, sizeof(*cmd_hdr));
+	cmd_hdr->service = BTP_SERVICE_ID_CCP;
+	cmd_hdr->opcode = BTP_CCP_DISCOVER_TBS;
+	cmd_hdr->index = BTP_INDEX;
+	cmd = net_buf_simple_add(&cmd_buffer, sizeof(*cmd));
+	bt_addr_le_copy(&cmd->address, address);
+
+	cmd_hdr->len = cmd_buffer.len - sizeof(*cmd_hdr);
+
+	bsim_btp_send_to_tester(cmd_buffer.data, cmd_buffer.len);
+}
+
+static inline void bsim_btp_ccp_originate_call(const bt_addr_le_t *address, uint8_t inst_index,
+					       const char *uri)
+{
+	struct btp_ccp_originate_call_cmd *cmd;
+	struct btp_hdr *cmd_hdr;
+
+	NET_BUF_SIMPLE_DEFINE(cmd_buffer, BTP_MTU);
+
+	cmd_hdr = net_buf_simple_add(&cmd_buffer, sizeof(*cmd_hdr));
+	cmd_hdr->service = BTP_SERVICE_ID_CCP;
+	cmd_hdr->opcode = BTP_CCP_ORIGINATE_CALL;
+	cmd_hdr->index = BTP_INDEX;
+	cmd = net_buf_simple_add(&cmd_buffer, sizeof(*cmd));
+	bt_addr_le_copy(&cmd->address, address);
+	cmd->inst_index = inst_index;
+	cmd->uri_len = strlen(uri) + 1 /* NULL terminator */;
+	net_buf_simple_add_mem(&cmd_buffer, uri, cmd->uri_len);
+
+	cmd_hdr->len = cmd_buffer.len - sizeof(*cmd_hdr);
+
+	bsim_btp_send_to_tester(cmd_buffer.data, cmd_buffer.len);
+}
+
+static inline void bsim_btp_wait_for_ccp_discovered(void)
+{
+	struct btp_ccp_discovered_ev *ev;
+	struct net_buf *buf;
+
+	bsim_btp_wait_for_evt(BTP_SERVICE_ID_CCP, BTP_CCP_EV_DISCOVERED, &buf);
+	ev = net_buf_pull_mem(buf, sizeof(*ev));
+
+	TEST_ASSERT(ev->status == BT_ATT_ERR_SUCCESS);
+
+	net_buf_unref(buf);
+}
+
+static inline void bsim_btp_wait_for_ccp_call_states(void)
+{
+	struct btp_ccp_call_states_ev *ev;
+	struct net_buf *buf;
+
+	bsim_btp_wait_for_evt(BTP_SERVICE_ID_CCP, BTP_CCP_EV_CALL_STATES, &buf);
+	ev = net_buf_pull_mem(buf, sizeof(*ev));
+
+	TEST_ASSERT(ev->status == BT_ATT_ERR_SUCCESS);
+
+	net_buf_unref(buf);
+}
 
 static inline void bsim_btp_core_register(uint8_t id)
 {
@@ -382,6 +451,114 @@ static inline void bsim_btp_wait_for_hauc_discovery_complete(bt_addr_le_t *addre
 	if (address != NULL) {
 		bt_addr_le_copy(address, &ev->address);
 	}
+
+	net_buf_unref(buf);
+}
+static inline void bsim_btp_mcp_discover(const bt_addr_le_t *address)
+{
+	struct btp_mcp_discover_cmd *cmd;
+	struct btp_hdr *cmd_hdr;
+
+	NET_BUF_SIMPLE_DEFINE(cmd_buffer, BTP_MTU);
+
+	cmd_hdr = net_buf_simple_add(&cmd_buffer, sizeof(*cmd_hdr));
+	cmd_hdr->service = BTP_SERVICE_ID_MCP;
+	cmd_hdr->opcode = BTP_MCP_DISCOVER;
+	cmd_hdr->index = BTP_INDEX;
+	cmd = net_buf_simple_add(&cmd_buffer, sizeof(*cmd));
+	bt_addr_le_copy(&cmd->address, address);
+
+	cmd_hdr->len = cmd_buffer.len - sizeof(*cmd_hdr);
+
+	bsim_btp_send_to_tester(cmd_buffer.data, cmd_buffer.len);
+}
+
+static inline void bsim_btp_mcp_send_cmd(const bt_addr_le_t *address, uint8_t opcode,
+					 bool use_param, int32_t param)
+{
+	struct btp_mcp_send_cmd *cmd;
+	struct btp_hdr *cmd_hdr;
+
+	NET_BUF_SIMPLE_DEFINE(cmd_buffer, BTP_MTU);
+
+	cmd_hdr = net_buf_simple_add(&cmd_buffer, sizeof(*cmd_hdr));
+	cmd_hdr->service = BTP_SERVICE_ID_MCP;
+	cmd_hdr->opcode = BTP_MCP_CMD_SEND;
+	cmd_hdr->index = BTP_INDEX;
+	cmd = net_buf_simple_add(&cmd_buffer, sizeof(*cmd));
+	bt_addr_le_copy(&cmd->address, address);
+	cmd->opcode = opcode;
+	cmd->use_param = use_param ? 1U : 0U;
+	cmd->param = sys_cpu_to_le32(param);
+
+	cmd_hdr->len = cmd_buffer.len - sizeof(*cmd_hdr);
+
+	bsim_btp_send_to_tester(cmd_buffer.data, cmd_buffer.len);
+}
+
+static inline void bsim_btp_wait_for_mcp_discovered(bt_addr_le_t *address)
+{
+	struct btp_mcp_discovered_ev *ev;
+	struct net_buf *buf;
+
+	bsim_btp_wait_for_evt(BTP_SERVICE_ID_MCP, BTP_MCP_DISCOVERED_EV, &buf);
+	ev = net_buf_pull_mem(buf, sizeof(*ev));
+
+	TEST_ASSERT(ev->status == BT_ATT_ERR_SUCCESS);
+
+	if (address != NULL) {
+		bt_addr_le_copy(address, &ev->address);
+	}
+
+	net_buf_unref(buf);
+}
+
+static inline void bsim_btp_wait_for_mcp_cmd_ntf(uint8_t *requested_opcode)
+{
+	struct btp_mcp_cmd_ntf_ev *ev;
+	struct net_buf *buf;
+
+	bsim_btp_wait_for_evt(BTP_SERVICE_ID_MCP, BTP_MCP_NTF_EV, &buf);
+	ev = net_buf_pull_mem(buf, sizeof(*ev));
+
+	TEST_ASSERT(ev->status == BT_ATT_ERR_SUCCESS);
+	TEST_ASSERT(ev->result_code == BT_MCS_OPC_NTF_SUCCESS);
+
+	if (requested_opcode != NULL) {
+		*requested_opcode = ev->requested_opcode;
+	}
+
+	net_buf_unref(buf);
+}
+
+static inline void bsim_btp_tmap_discover(const bt_addr_le_t *address)
+{
+	struct btp_tmap_discover_cmd *cmd;
+	struct btp_hdr *cmd_hdr;
+
+	NET_BUF_SIMPLE_DEFINE(cmd_buffer, BTP_MTU);
+
+	cmd_hdr = net_buf_simple_add(&cmd_buffer, sizeof(*cmd_hdr));
+	cmd_hdr->service = BTP_SERVICE_ID_TMAP;
+	cmd_hdr->opcode = BTP_TMAP_DISCOVER;
+	cmd_hdr->index = BTP_INDEX;
+	cmd = net_buf_simple_add(&cmd_buffer, sizeof(*cmd));
+	bt_addr_le_copy(&cmd->address, address);
+
+	cmd_hdr->len = cmd_buffer.len - sizeof(*cmd_hdr);
+
+	bsim_btp_send_to_tester(cmd_buffer.data, cmd_buffer.len);
+}
+
+static inline void bsim_btp_wait_for_tmap_discovery_complete(void)
+{
+	struct btp_tmap_discovery_complete_ev *ev;
+	struct net_buf *buf;
+
+	bsim_btp_wait_for_evt(BTP_SERVICE_ID_TMAP, BT_TMAP_EV_DISCOVERY_COMPLETE, &buf);
+	ev = net_buf_pull_mem(buf, sizeof(*ev));
+
+	TEST_ASSERT(ev->status == BT_ATT_ERR_SUCCESS);
 
 	net_buf_unref(buf);
 }

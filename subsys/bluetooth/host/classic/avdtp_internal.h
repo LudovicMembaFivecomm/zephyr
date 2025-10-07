@@ -125,6 +125,16 @@ struct bt_avdtp_single_sig_hdr {
 	uint8_t signal_id;
 } __packed;
 
+struct bt_avdtp_start_sig_hdr {
+	uint8_t hdr;
+	uint8_t num_of_signal_pkts;
+	uint8_t signal_id;
+} __packed;
+
+struct bt_avdtp_continue_end_sig_hdr {
+	uint8_t hdr;
+} __packed;
+
 struct bt_avdtp_media_hdr {
 #ifdef CONFIG_LITTLE_ENDIAN
 	uint8_t CSRC_count: 4;
@@ -189,13 +199,13 @@ struct bt_avdtp_recovery_capabilities {
 struct bt_avdtp_media_codec_capabilities {
 	uint8_t media_type;
 	uint8_t media_code_type;
-	uint8_t media_codec_spec_info[0];
+	uint8_t media_codec_spec_info[];
 } __packed;
 
 struct bt_avdtp_content_protection_capabilities {
 	uint8_t cp_type_lsb;
 	uint8_t cp_type_msb;
-	uint8_t cp_type_spec_value[0];
+	uint8_t cp_type_spec_value[];
 } __packed;
 
 struct bt_avdtp_header_compression_capabilities {
@@ -263,6 +273,9 @@ struct bt_avdtp {
 	struct k_work_delayable timeout_work;
 	/* semaphore for lock/unlock */
 	struct k_sem sem_lock;
+	struct net_buf *reasm_buf;
+	uint8_t num_of_signal_pkts;
+	uint8_t tid_sent;
 };
 
 struct bt_avdtp_event_cb {
